@@ -4,21 +4,28 @@ const jwt = require("jsonwebtoken");
 const Board = require("../models/Board");
 const Column = require("../models/Column");
 
-// ================= REGISTER =================
+
 exports.register = async (req, res) => {
   try {
     const { email, password } = req.body;
 
-    console.log("Register request received:", req.body);
+    // Never log the password
+    console.log("Register request received:", {
+      email,
+    });
 
     if (!email || !password) {
-      return res.status(400).json({ message: "Email and password required" });
+      return res.status(400).json({
+        message: "Email and password required",
+      });
     }
 
     const userExists = await User.findOne({ email });
 
     if (userExists) {
-      return res.status(400).json({ message: "User already exists" });
+      return res.status(400).json({
+        message: "User already exists",
+      });
     }
 
     const salt = await bcrypt.genSalt(10);
@@ -39,19 +46,30 @@ exports.register = async (req, res) => {
     console.log("Board created:", board._id);
 
     await Column.insertMany([
-      { title: "Todo", board: board._id, user: user._id },
-      { title: "In Progress", board: board._id, user: user._id },
-      { title: "Done", board: board._id, user: user._id },
+      {
+        title: "Todo",
+        board: board._id,
+        user: user._id,
+      },
+      {
+        title: "In Progress",
+        board: board._id,
+        user: user._id,
+      },
+      {
+        title: "Done",
+        board: board._id,
+        user: user._id,
+      },
     ]);
 
     console.log("Default columns created");
 
-    res.status(201).json({ message: "User registered successfully" });
-
+    res.status(201).json({
+      message: "User registered successfully",
+    });
   } catch (error) {
-    console.log("===== REGISTER BACKEND ERROR =====");
-    console.log(error);
-    console.log("===== END ERROR =====");
+    console.error("REGISTER BACKEND ERROR:", error.message);
 
     res.status(500).json({
       message: error.message,
@@ -60,7 +78,6 @@ exports.register = async (req, res) => {
 };
 
 
-// ================= LOGIN =================
 exports.login = async (req, res) => {
   try {
     const { email, password } = req.body;
@@ -68,13 +85,17 @@ exports.login = async (req, res) => {
     const user = await User.findOne({ email });
 
     if (!user) {
-      return res.status(400).json({ message: "Invalid credentials" });
+      return res.status(400).json({
+        message: "Invalid credentials",
+      });
     }
 
     const isMatch = await bcrypt.compare(password, user.password);
 
     if (!isMatch) {
-      return res.status(400).json({ message: "Invalid credentials" });
+      return res.status(400).json({
+        message: "Invalid credentials",
+      });
     }
 
     const token = jwt.sign(
@@ -84,9 +105,11 @@ exports.login = async (req, res) => {
     );
 
     res.json({ token });
-
   } catch (error) {
-    console.log("LOGIN ERROR:", error);
-    res.status(500).json({ message: error.message });
+    console.error("LOGIN ERROR:", error.message);
+
+    res.status(500).json({
+      message: error.message,
+    });
   }
 };
